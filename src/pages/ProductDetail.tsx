@@ -1,0 +1,236 @@
+import { useEffect, useState } from "react";
+import { useParams, useNavigate, Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { ArrowLeft, Clock, MapPin, ShoppingCart, Store } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  description: string | null;
+  category: string;
+  image_url: string | null;
+  stores: {
+    name: string;
+    whatsapp: string;
+    address: string;
+    opening_time: string | null;
+    closing_time: string | null;
+  };
+}
+
+const ProductDetail = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (id) {
+      fetchProduct();
+    }
+  }, [id]);
+
+  const fetchProduct = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from("products")
+        .select(`
+          *,
+          stores (
+            name,
+            whatsapp,
+            address,
+            opening_time,
+            closing_time
+          )
+        `)
+        .eq("id", id)
+        .single();
+
+      if (error) throw error;
+      setProduct(data);
+    } catch (error: any) {
+      toast({
+        title: "Erro ao carregar produto",
+        description: error.message,
+        variant: "destructive",
+      });
+      navigate("/");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const addToCart = () => {
+    if (!product) return;
+
+    const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+    const existingItem = cart.find((item: any) => item.id === product.id);
+
+    if (existingItem) {
+      existingItem.quantity += 1;
+    } else {
+      cart.push({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        image_url: product.image_url,
+        quantity: 1,
+        store: product.stores,
+      });
+    }
+
+    localStorage.setItem("cart", JSON.stringify(cart));
+    toast({
+      title: "Adicionado ao carrinho!",
+      description: `${product.name} foi adicionado ao seu carrinho.`,
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-muted-foreground">Carregando...</p>
+      </div>
+    );
+  }
+
+  if (!product) return null;
+
+  const isStoreOpen = () => {
+    if (!product.stores.opening_time || !product.stores.closing_time) return true;
+    
+    const now = new Date();
+    const currentTime = now.getHours() * 60 + now.getMinutes();
+    
+    const [openHour, openMin] = product.stores.opening_time.split(':').map(Number);
+    const [closeHour, closeMin] = product.stores.closing_time.split(':').map(Number);
+    
+    const openTime = openHour * 60 + openMin;
+    const closeTime = closeHour * 60 + closeMin;
+    
+    return currentTime >= openTime && currentTime <= closeTime;
+  };
+
+  const storeOpen = isStoreOpen();
+
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="sticky top-0 z-50 bg-primary text-primary-foreground shadow-lg">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <Link to="/" className="flex items-center gap-2">
+              <Store className="h-8 w-8" />
+              <h1 className="text-2xl font-bold">Achei Aí</h1>
+            </Link>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate("/cart")}
+              className="hover:bg-primary-foreground/10"
+            >
+              <ShoppingCart className="h-5 w-5" />
+            </Button>
+          </div>
+        </div>
+      </header>
+
+      <div className="container mx-auto px-4 py-8">
+        <Button
+          variant="ghost"
+          onClick={() => navigate("/")}
+          className="mb-6"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Voltar
+        </Button>
+
+        <div className="grid md:grid-cols-2 gap-8">
+          {/* Product Image */}
+          <div className="relative aspect-square rounded-lg overflow-hidden bg-muted">
+            {product.image_url ? (
+              <img
+                src={product.image_url}
+                alt={product.name}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-primary/5">
+                <span className="text-9xl">{product.category === "Roupas" ? "👕" : product.category === "Calçados" ? "👟" : "👜"}</span>
+              </div>
+            )}
+          </div>
+
+          {/* Product Info */}
+          <div className="space-y-6">
+            <div>
+              <div className="flex items-start justify-between gap-4 mb-2">
+                <h1 className="text-3xl font-bold">{product.name}</h1>
+                <Badge variant="outline">{product.category}</Badge>
+              </div>
+              <p className="text-4xl font-bold text-primary">
+                R$ {product.price.toFixed(2)}
+              </p>
+            </div>
+
+            {product.description && (
+              <div>
+                <h2 className="text-lg font-semibold mb-2">Descrição</h2>
+                <p className="text-muted-foreground">{product.description}</p>
+              </div>
+            )}
+
+            <Card>
+              <CardContent className="pt-6 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold">Informações da Loja</h3>
+                  <Badge variant={storeOpen ? "default" : "secondary"}>
+                    {storeOpen ? "Aberta" : "Fechada"}
+                  </Badge>
+                </div>
+                
+                <div className="space-y-2 text-sm">
+                  <div className="flex items-center gap-2">
+                    <Store className="h-4 w-4 text-primary" />
+                    <span className="font-medium">{product.stores.name}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-primary" />
+                    <span>{product.stores.address}</span>
+                  </div>
+                  {product.stores.opening_time && product.stores.closing_time && (
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-primary" />
+                      <span>
+                        {product.stores.opening_time.slice(0, 5)} - {product.stores.closing_time.slice(0, 5)}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Button
+              size="lg"
+              className="w-full"
+              onClick={addToCart}
+            >
+              <ShoppingCart className="mr-2 h-5 w-5" />
+              Adicionar ao Carrinho
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ProductDetail;
