@@ -104,10 +104,10 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center space-y-6">
             <h2 className="text-4xl md:text-5xl font-bold">
-              Encontre moda local em um clique
+              Encontre o que você procura nas lojas locais
             </h2>
             <p className="text-lg opacity-90">
-              Conecte-se com lojas da sua região e descubra produtos incríveis
+              Conectamos consumidores com intenção de compra presencial às lojas físicas da região, fortalecendo o comércio local e gerando fluxo qualificado para o lojista
             </p>
             
             {/* Search Bar */}

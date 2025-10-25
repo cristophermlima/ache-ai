@@ -33,6 +33,8 @@ const LojistaCadastro = () => {
       const validated = signupSchema.parse({ email, password, confirmPassword });
       setLoading(true);
 
+      console.log("Iniciando cadastro para:", validated.email);
+
       const redirectUrl = `${window.location.origin}/lojista/cadastro-loja`;
 
       const { data, error } = await supabase.auth.signUp({
@@ -43,9 +45,23 @@ const LojistaCadastro = () => {
         },
       });
 
-      if (error) throw error;
+      console.log("Resposta do signup:", { data, error });
+
+      if (error) {
+        console.error("Erro no signup:", error);
+        throw error;
+      }
 
       if (data.user) {
+        console.log("Usuário criado com sucesso:", data.user.id);
+        toast({
+          title: "Cadastro realizado!",
+          description: "Agora vamos cadastrar sua loja.",
+        });
+        navigate("/lojista/cadastro-loja");
+      } else if (data.session === null && !error) {
+        // Email confirmation might be required
+        console.log("Cadastro realizado, mas pode precisar confirmar email");
         toast({
           title: "Cadastro realizado!",
           description: "Agora vamos cadastrar sua loja.",
@@ -53,6 +69,7 @@ const LojistaCadastro = () => {
         navigate("/lojista/cadastro-loja");
       }
     } catch (error: any) {
+      console.error("Erro capturado:", error);
       if (error instanceof z.ZodError) {
         toast({
           title: "Erro de validação",

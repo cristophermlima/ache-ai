@@ -35,51 +35,91 @@ const LojistaCadastroLoja = () => {
   }, []);
 
   const checkUser = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      navigate("/lojista/login");
-      return;
-    }
-    setUser(user);
+    try {
+      console.log("Verificando usuário autenticado...");
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError) {
+        console.error("Erro ao obter usuário:", userError);
+      }
+      
+      if (!user) {
+        console.log("Usuário não autenticado, redirecionando para login");
+        navigate("/lojista/login");
+        return;
+      }
+      
+      console.log("Usuário autenticado:", user.id);
+      setUser(user);
 
-    // Check if store already exists
-    const { data: store } = await supabase
-      .from("stores")
-      .select("*")
-      .eq("user_id", user.id)
-      .single();
+      // Check if store already exists
+      const { data: store, error: storeError } = await supabase
+        .from("stores")
+        .select("*")
+        .eq("user_id", user.id)
+        .maybeSingle();
 
-    if (store) {
-      navigate("/lojista/painel");
+      if (storeError) {
+        console.error("Erro ao verificar loja:", storeError);
+      }
+
+      if (store) {
+        console.log("Loja já existe, redirecionando para painel");
+        navigate("/lojista/painel");
+      } else {
+        console.log("Usuário pronto para cadastrar loja");
+      }
+    } catch (error) {
+      console.error("Erro em checkUser:", error);
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!user) return;
+    if (!user) {
+      console.error("Usuário não definido");
+      toast({
+        title: "Erro",
+        description: "Usuário não autenticado. Por favor, faça login novamente.",
+        variant: "destructive",
+      });
+      navigate("/lojista/login");
+      return;
+    }
 
     try {
+      console.log("Validando dados da loja...");
       const validated = storeSchema.parse(formData);
+      console.log("Dados validados:", validated);
+      
       setLoading(true);
 
-      const { error } = await supabase.from("stores").insert({
+      console.log("Inserindo loja no banco para user_id:", user.id);
+      const { data, error } = await supabase.from("stores").insert({
         user_id: user.id,
         name: validated.name,
         whatsapp: validated.whatsapp,
         address: validated.address,
         opening_time: validated.opening_time || null,
         closing_time: validated.closing_time || null,
-      });
+      }).select();
 
-      if (error) throw error;
+      console.log("Resultado da inserção:", { data, error });
 
+      if (error) {
+        console.error("Erro ao inserir loja:", error);
+        throw error;
+      }
+
+      console.log("Loja cadastrada com sucesso!");
       toast({
         title: "Loja cadastrada!",
         description: "Sua loja foi criada com sucesso.",
       });
       navigate("/lojista/painel");
     } catch (error: any) {
+      console.error("Erro capturado:", error);
       if (error instanceof z.ZodError) {
         toast({
           title: "Erro de validação",
@@ -89,7 +129,7 @@ const LojistaCadastroLoja = () => {
       } else {
         toast({
           title: "Erro ao cadastrar loja",
-          description: error.message,
+          description: error.message || "Erro desconhecido. Verifique o console para mais detalhes.",
           variant: "destructive",
         });
       }
