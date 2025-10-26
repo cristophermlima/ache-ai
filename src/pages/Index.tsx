@@ -26,7 +26,9 @@ interface Product {
 const Index = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [cityFilter, setCityFilter] = useState("");
   const [loading, setLoading] = useState(true);
+  const [gettingLocation, setGettingLocation] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -63,15 +65,70 @@ const Index = () => {
     }
   };
 
+  const getCurrentLocation = async () => {
+    setGettingLocation(true);
+    try {
+      if (!navigator.geolocation) {
+        toast({
+          title: "Localização não suportada",
+          description: "Seu navegador não suporta geolocalização.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+          
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+          );
+          const data = await response.json();
+          
+          if (data.address) {
+            const city = data.address.city || data.address.town || data.address.village || "";
+            setCityFilter(city);
+            
+            toast({
+              title: "Localização obtida!",
+              description: `Buscando em: ${city}`,
+            });
+          }
+          setGettingLocation(false);
+        },
+        (error) => {
+          console.error("Erro ao obter localização:", error);
+          toast({
+            title: "Erro",
+            description: "Não foi possível obter sua localização.",
+            variant: "destructive",
+          });
+          setGettingLocation(false);
+        }
+      );
+    } catch (error) {
+      console.error("Erro:", error);
+      setGettingLocation(false);
+    }
+  };
+
   const filteredProducts = products.filter((product) => {
-    if (!searchQuery.trim()) return true;
     const query = searchQuery.toLowerCase().trim();
-    return (
+    const city = cityFilter.toLowerCase().trim();
+    
+    const matchesSearch = !query || (
       product.name?.toLowerCase().includes(query) ||
       product.category?.toLowerCase().includes(query) ||
       product.stores?.name?.toLowerCase().includes(query) ||
       product.description?.toLowerCase().includes(query)
     );
+    
+    const matchesCity = !city || (
+      product.stores?.address?.toLowerCase().includes(city)
+    );
+    
+    return matchesSearch && matchesCity;
   });
 
   return (
@@ -115,15 +172,37 @@ const Index = () => {
             </p>
             
             {/* Search Bar */}
-            <div className="relative max-w-2xl mx-auto">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-              <Input
-                type="text"
-                placeholder="Buscar por produto, categoria ou loja..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-12 h-14 text-lg bg-background text-foreground"
-              />
+            <div className="max-w-2xl mx-auto space-y-3">
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder="Buscar por produto, categoria ou loja..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-12 h-14 text-lg bg-background text-foreground"
+                />
+              </div>
+              
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Input
+                    type="text"
+                    placeholder="Filtrar por cidade..."
+                    value={cityFilter}
+                    onChange={(e) => setCityFilter(e.target.value)}
+                    className="h-12 bg-background text-foreground"
+                  />
+                </div>
+                <Button
+                  type="button"
+                  onClick={getCurrentLocation}
+                  disabled={gettingLocation}
+                  className="h-12 px-6"
+                >
+                  {gettingLocation ? "Obtendo..." : "📍 Usar Minha Localização"}
+                </Button>
+              </div>
             </div>
           </div>
         </div>

@@ -13,6 +13,8 @@ const storeSchema = z.object({
   name: z.string().trim().min(1, { message: "Nome da loja é obrigatório" }).max(100),
   whatsapp: z.string().trim().min(10, { message: "WhatsApp inválido" }).max(20),
   address: z.string().trim().min(1, { message: "Endereço é obrigatório" }).max(255),
+  city: z.string().trim().min(1, { message: "Cidade é obrigatória" }).max(100),
+  state: z.string().trim().optional(),
   opening_time: z.string().optional(),
   closing_time: z.string().optional(),
 });
@@ -26,9 +28,12 @@ const LojistaCadastroLoja = () => {
     name: "",
     whatsapp: "",
     address: "",
+    city: "",
+    state: "",
     opening_time: "",
     closing_time: "",
   });
+  const [gettingLocation, setGettingLocation] = useState(false);
 
   useEffect(() => {
     checkUser();
@@ -74,6 +79,58 @@ const LojistaCadastroLoja = () => {
     }
   };
 
+  const getCurrentLocation = async () => {
+    setGettingLocation(true);
+    try {
+      if (!navigator.geolocation) {
+        toast({
+          title: "Localização não suportada",
+          description: "Seu navegador não suporta geolocalização.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+          
+          // Reverse geocoding to get city name
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+          );
+          const data = await response.json();
+          
+          if (data.address) {
+            setFormData({
+              ...formData,
+              city: data.address.city || data.address.town || data.address.village || "",
+              state: data.address.state || "",
+            });
+            
+            toast({
+              title: "Localização obtida!",
+              description: `Cidade: ${data.address.city || data.address.town || ""}`,
+            });
+          }
+          setGettingLocation(false);
+        },
+        (error) => {
+          console.error("Erro ao obter localização:", error);
+          toast({
+            title: "Erro",
+            description: "Não foi possível obter sua localização.",
+            variant: "destructive",
+          });
+          setGettingLocation(false);
+        }
+      );
+    } catch (error) {
+      console.error("Erro:", error);
+      setGettingLocation(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -101,6 +158,8 @@ const LojistaCadastroLoja = () => {
         name: validated.name,
         whatsapp: validated.whatsapp,
         address: validated.address,
+        city: validated.city,
+        state: validated.state || null,
         opening_time: validated.opening_time || null,
         closing_time: validated.closing_time || null,
       }).select();
@@ -185,6 +244,37 @@ const LojistaCadastroLoja = () => {
                   value={formData.address}
                   onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                   required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="city">Cidade *</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="city"
+                    placeholder="Ex: São Paulo"
+                    value={formData.city}
+                    onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                    required
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={getCurrentLocation}
+                    disabled={gettingLocation}
+                  >
+                    {gettingLocation ? "..." : "📍"}
+                  </Button>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="state">Estado</Label>
+                <Input
+                  id="state"
+                  placeholder="Ex: SP"
+                  value={formData.state}
+                  onChange={(e) => setFormData({ ...formData, state: e.target.value })}
                 />
               </div>
 

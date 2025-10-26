@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 
@@ -132,19 +132,13 @@ export const ProductForm = ({ storeId, product, onSuccess, onCancel }: ProductFo
 
         <div className="space-y-2">
           <Label htmlFor="category">Categoria *</Label>
-          <Select
+          <Input
+            id="category"
+            placeholder="Ex: Roupas, Eletrônicos, Alimentos"
             value={formData.category}
-            onValueChange={(value) => setFormData({ ...formData, category: value })}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Selecione uma categoria" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Roupas">Roupas</SelectItem>
-              <SelectItem value="Calçados">Calçados</SelectItem>
-              <SelectItem value="Acessórios">Acessórios</SelectItem>
-            </SelectContent>
-          </Select>
+            onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+            required
+          />
         </div>
 
         <div className="space-y-2">

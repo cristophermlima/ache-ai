@@ -64,33 +64,45 @@ export type Database = {
       stores: {
         Row: {
           address: string
+          city: string | null
           closing_time: string | null
           created_at: string
           id: string
+          latitude: number | null
+          longitude: number | null
           name: string
           opening_time: string | null
+          state: string | null
           updated_at: string
           user_id: string
           whatsapp: string
         }
         Insert: {
           address: string
+          city?: string | null
           closing_time?: string | null
           created_at?: string
           id?: string
+          latitude?: number | null
+          longitude?: number | null
           name: string
           opening_time?: string | null
+          state?: string | null
           updated_at?: string
           user_id: string
           whatsapp: string
         }
         Update: {
           address?: string
+          city?: string | null
           closing_time?: string | null
           created_at?: string
           id?: string
+          latitude?: number | null
+          longitude?: number | null
           name?: string
           opening_time?: string | null
+          state?: string | null
           updated_at?: string
           user_id?: string
           whatsapp?: string
