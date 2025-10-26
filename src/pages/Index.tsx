@@ -167,9 +167,7 @@ const Index = () => {
             <h2 className="text-4xl md:text-5xl font-bold">
               Encontre o que você procura nas lojas locais
             </h2>
-            <p className="text-lg opacity-90">
-              Conectamos consumidores com intenção de compra presencial às lojas físicas da região, fortalecendo o comércio local e gerando fluxo qualificado para o lojista
-            </p>
+          
             
             {/* Search Bar */}
             <div className="max-w-2xl mx-auto space-y-3">
