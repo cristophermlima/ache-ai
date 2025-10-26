@@ -94,7 +94,7 @@ const Index = () => {
                 <ShoppingCart className="h-5 w-5 text-accent" />
               </Button>
               <Link to="/lojista/login">
-                <Button variant="outline" size="sm" className="font-semibold border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary">
+                <Button variant="outline" size="sm" className="font-semibold border-primary-foreground/30 text-accent hover:bg-primary-foreground hover:text-primary">
                   Área do Lojista
                 </Button>
               </Link>
