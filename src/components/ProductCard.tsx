@@ -76,9 +76,12 @@ export const ProductCard = ({ product }: ProductCardProps) => {
         </p>
         
         <div className="space-y-1 text-sm text-muted-foreground">
-          <div className="flex items-center gap-1">
-            <MapPin className="h-4 w-4 shrink-0" />
-            <span className="line-clamp-1">{product.stores.name}</span>
+          <div className="flex items-start gap-1">
+            <MapPin className="h-4 w-4 shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-foreground line-clamp-1">{product.stores.name}</p>
+              <p className="line-clamp-1">{product.stores.address}</p>
+            </div>
           </div>
           {product.stores.opening_time && product.stores.closing_time && (
             <div className="flex items-center gap-1">
