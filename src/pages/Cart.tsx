@@ -67,45 +67,28 @@ const Cart = () => {
     return groups;
   };
 
-  const sendToWhatsApp = () => {
-    if (cart.length === 0) {
-      toast({
-        title: "Carrinho vazio",
-        description: "Adicione produtos antes de finalizar",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const storeGroups = groupByStore();
+  const sendToWhatsAppForStore = (storeName: string, items: CartItem[]) => {
+    const whatsapp = items[0].store.whatsapp.replace(/\D/g, "");
+    let message = `Olá! Vi esses produtos no Achei Aí e quero comprar:\n\n`;
     
-    Object.entries(storeGroups).forEach(([storeName, items]) => {
-      const whatsapp = items[0].store.whatsapp.replace(/\D/g, "");
-      let message = `Olá! Vi esses produtos no Achei Aí e quero comprar:\n\n`;
-      
-      items.forEach((item) => {
-        message += `📦 ${item.name}\n`;
-        message += `   Quantidade: ${item.quantity}\n`;
-        message += `   Preço: R$ ${item.price.toFixed(2)}\n`;
-        message += `   Subtotal: R$ ${(item.price * item.quantity).toFixed(2)}\n\n`;
-      });
-      
-      const storeTotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-      message += `💰 Total: R$ ${storeTotal.toFixed(2)}`;
-      
-      const encodedMessage = encodeURIComponent(message);
-      const whatsappUrl = `https://wa.me/55${whatsapp}?text=${encodedMessage}`;
-      
-      window.open(whatsappUrl, "_blank");
+    items.forEach((item) => {
+      message += `📦 ${item.name}\n`;
+      message += `   Quantidade: ${item.quantity}\n`;
+      message += `   Preço: R$ ${item.price.toFixed(2)}\n`;
+      message += `   Subtotal: R$ ${(item.price * item.quantity).toFixed(2)}\n\n`;
     });
-
-    // Clear cart after sending
-    localStorage.setItem("cart", "[]");
-    setCart([]);
     
+    const storeTotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    message += `💰 Total: R$ ${storeTotal.toFixed(2)}`;
+    
+    const encodedMessage = encodeURIComponent(message);
+    const whatsappUrl = `https://wa.me/55${whatsapp}?text=${encodedMessage}`;
+    
+    window.open(whatsappUrl, "_blank");
+
     toast({
-      title: "Pedido enviado!",
-      description: "Você será redirecionado para o WhatsApp da(s) loja(s)",
+      title: "Mensagem enviada!",
+      description: `Abrindo WhatsApp de ${storeName}`,
     });
   };
 
@@ -147,8 +130,25 @@ const Cart = () => {
         ) : (
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Cart Items */}
-            <div className="lg:col-span-2 space-y-4">
-              {cart.map((item) => (
+            <div className="lg:col-span-2 space-y-6">
+              {Object.entries(groupByStore()).map(([storeName, items]) => (
+                <div key={storeName} className="space-y-4">
+                  {/* Store Header */}
+                  <div className="flex items-center justify-between bg-muted p-4 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <Store className="h-5 w-5" />
+                      <h2 className="font-semibold text-lg">{storeName}</h2>
+                    </div>
+                    <Button
+                      onClick={() => sendToWhatsAppForStore(storeName, items)}
+                      size="sm"
+                    >
+                      Enviar para esta loja
+                    </Button>
+                  </div>
+
+                  {/* Store Items */}
+                  {items.map((item) => (
                 <Card key={item.id}>
                   <CardContent className="p-4">
                     <div className="flex gap-4">
@@ -216,6 +216,8 @@ const Cart = () => {
                   </CardContent>
                 </Card>
               ))}
+                </div>
+              ))}
             </div>
 
             {/* Order Summary */}
@@ -236,16 +238,8 @@ const Cart = () => {
                     <span className="text-primary">R$ {getTotal().toFixed(2)}</span>
                   </div>
 
-                  <Button
-                    size="lg"
-                    className="w-full"
-                    onClick={sendToWhatsApp}
-                  >
-                    Finalizar pelo WhatsApp
-                  </Button>
-
                   <p className="text-xs text-center text-muted-foreground">
-                    Você será redirecionado para o WhatsApp da loja para finalizar sua compra
+                    Clique em "Enviar para esta loja" ao lado de cada loja para enviar o pedido pelo WhatsApp
                   </p>
                 </CardContent>
               </Card>

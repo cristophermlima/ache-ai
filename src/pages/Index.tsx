@@ -20,6 +20,7 @@ interface Product {
     address: string;
     opening_time: string | null;
     closing_time: string | null;
+    operating_days: string[] | null;
   };
 }
 
@@ -47,13 +48,25 @@ const Index = () => {
             name,
             address,
             opening_time,
-            closing_time
+            closing_time,
+            operating_days
           )
         `)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      setProducts(data || []);
+      
+      const productsWithTypedDays = (data || []).map(product => ({
+        ...product,
+        stores: {
+          ...product.stores,
+          operating_days: Array.isArray(product.stores.operating_days) 
+            ? product.stores.operating_days as string[]
+            : null
+        }
+      }));
+      
+      setProducts(productsWithTypedDays);
     } catch (error: any) {
       toast({
         title: "Erro ao carregar produtos",

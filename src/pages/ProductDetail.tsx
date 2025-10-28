@@ -20,6 +20,7 @@ interface Product {
     address: string;
     opening_time: string | null;
     closing_time: string | null;
+    operating_days: string[] | null;
   };
 }
 
@@ -48,14 +49,26 @@ const ProductDetail = () => {
             whatsapp,
             address,
             opening_time,
-            closing_time
+            closing_time,
+            operating_days
           )
         `)
         .eq("id", id)
         .single();
 
       if (error) throw error;
-      setProduct(data);
+      
+      const productWithTypedDays = {
+        ...data,
+        stores: {
+          ...data.stores,
+          operating_days: Array.isArray(data.stores.operating_days) 
+            ? data.stores.operating_days as string[]
+            : null
+        }
+      };
+      
+      setProduct(productWithTypedDays);
     } catch (error: any) {
       toast({
         title: "Erro ao carregar produto",
@@ -104,6 +117,35 @@ const ProductDetail = () => {
 
   if (!product) return null;
 
+  const dayLabels: Record<string, string> = {
+    monday: "Seg",
+    tuesday: "Ter",
+    wednesday: "Qua",
+    thursday: "Qui",
+    friday: "Sex",
+    saturday: "Sáb",
+    sunday: "Dom",
+  };
+
+  const formatOperatingDays = () => {
+    if (!product.stores.operating_days || product.stores.operating_days.length === 0) {
+      return null;
+    }
+    
+    const days = product.stores.operating_days.map(day => dayLabels[day] || day);
+    
+    // If all days, show "Todos os dias"
+    if (days.length === 7) return "Todos os dias";
+    
+    // If weekdays only
+    const weekdays = ["monday", "tuesday", "wednesday", "thursday", "friday"];
+    const isWeekdaysOnly = weekdays.every(day => product.stores.operating_days?.includes(day)) 
+                           && product.stores.operating_days.length === 5;
+    if (isWeekdaysOnly) return "Seg a Sex";
+    
+    return days.join(", ");
+  };
+
   const isStoreOpen = () => {
     if (!product.stores.opening_time || !product.stores.closing_time) return true;
     
@@ -120,6 +162,7 @@ const ProductDetail = () => {
   };
 
   const storeOpen = isStoreOpen();
+  const operatingDays = formatOperatingDays();
 
   return (
     <div className="min-h-screen bg-background">
@@ -209,9 +252,14 @@ const ProductDetail = () => {
                   {product.stores.opening_time && product.stores.closing_time && (
                     <div className="flex items-center gap-2">
                       <Clock className="h-4 w-4 text-primary" />
-                      <span>
-                        {product.stores.opening_time.slice(0, 5)} - {product.stores.closing_time.slice(0, 5)}
-                      </span>
+                      <div className="flex flex-col">
+                        <span>
+                          {product.stores.opening_time.slice(0, 5)} - {product.stores.closing_time.slice(0, 5)}
+                        </span>
+                        {operatingDays && (
+                          <span className="text-xs text-muted-foreground">{operatingDays}</span>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>
