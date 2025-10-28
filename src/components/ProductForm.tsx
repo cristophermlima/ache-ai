@@ -4,9 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
+import { Upload } from "lucide-react";
 
 const productSchema = z.object({
   name: z.string().trim().min(1, { message: "Nome é obrigatório" }).max(100),
@@ -27,6 +28,9 @@ interface ProductFormProps {
 export const ProductForm = ({ storeId, product, onSuccess, onCancel }: ProductFormProps) => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(product?.image_url || null);
   const [formData, setFormData] = useState({
     name: product?.name || "",
     price: product?.price || "",
@@ -36,17 +40,69 @@ export const ProductForm = ({ storeId, product, onSuccess, onCancel }: ProductFo
     image_url: product?.image_url || "",
   });
 
+  const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "Arquivo muito grande",
+          description: "A imagem deve ter no máximo 5MB",
+          variant: "destructive",
+        });
+        return;
+      }
+      setImageFile(file);
+      setImagePreview(URL.createObjectURL(file));
+    }
+  };
+
+  const uploadImage = async (): Promise<string | null> => {
+    if (!imageFile) return formData.image_url || null;
+
+    try {
+      setUploading(true);
+      const fileExt = imageFile.name.split('.').pop();
+      const fileName = `${Math.random()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('product-images')
+        .upload(filePath, imageFile);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('product-images')
+        .getPublicUrl(filePath);
+
+      return publicUrl;
+    } catch (error: any) {
+      toast({
+        title: "Erro ao fazer upload",
+        description: error.message,
+        variant: "destructive",
+      });
+      return null;
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
+      setLoading(true);
+
+      // Upload image if a file was selected
+      const uploadedImageUrl = await uploadImage();
+      
       const validated = productSchema.parse({
         ...formData,
         price: parseFloat(formData.price),
         stock: parseInt(formData.stock.toString()) || 0,
+        image_url: uploadedImageUrl || formData.image_url,
       });
-
-      setLoading(true);
 
       if (product) {
         // Update existing product
@@ -153,14 +209,42 @@ export const ProductForm = ({ storeId, product, onSuccess, onCancel }: ProductFo
         </div>
 
         <div className="space-y-2 md:col-span-2">
-          <Label htmlFor="image_url">URL da Imagem</Label>
-          <Input
-            id="image_url"
-            type="url"
-            placeholder="https://exemplo.com/imagem.jpg"
-            value={formData.image_url}
-            onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-          />
+          <Label>Imagem do Produto</Label>
+          <Tabs defaultValue="upload" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="upload">Fazer Upload</TabsTrigger>
+              <TabsTrigger value="url">Inserir URL</TabsTrigger>
+            </TabsList>
+            <TabsContent value="upload" className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Input
+                  id="image_file"
+                  type="file"
+                  accept="image/png,image/jpeg,image/jpg,image/webp,image/gif"
+                  onChange={handleImageFileChange}
+                  className="flex-1"
+                />
+                <Upload className="h-5 w-5 text-muted-foreground" />
+              </div>
+              {imagePreview && (
+                <div className="mt-2">
+                  <img src={imagePreview} alt="Preview" className="h-32 w-32 object-cover rounded" />
+                </div>
+              )}
+              <p className="text-xs text-muted-foreground">
+                Formatos aceitos: PNG, JPG, WEBP, GIF (máx. 5MB)
+              </p>
+            </TabsContent>
+            <TabsContent value="url" className="space-y-2">
+              <Input
+                id="image_url"
+                type="url"
+                placeholder="https://exemplo.com/imagem.jpg"
+                value={formData.image_url}
+                onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
+              />
+            </TabsContent>
+          </Tabs>
         </div>
 
         <div className="space-y-2 md:col-span-2">
@@ -176,8 +260,8 @@ export const ProductForm = ({ storeId, product, onSuccess, onCancel }: ProductFo
       </div>
 
       <div className="flex gap-2">
-        <Button type="submit" disabled={loading} className="flex-1">
-          {loading ? "Salvando..." : product ? "Atualizar" : "Criar"}
+        <Button type="submit" disabled={loading || uploading} className="flex-1">
+          {uploading ? "Fazendo upload..." : loading ? "Salvando..." : product ? "Atualizar" : "Criar"}
         </Button>
         <Button type="button" variant="outline" onClick={onCancel}>
           Cancelar

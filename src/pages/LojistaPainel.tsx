@@ -3,10 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { LogOut, Plus, Store } from "lucide-react";
+import { LogOut, Plus, Store, Edit } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ProductForm } from "@/components/ProductForm";
 import { ProductList } from "@/components/ProductList";
+import { StoreEditForm } from "@/components/StoreEditForm";
 
 interface StoreData {
   id: string;
@@ -35,6 +36,7 @@ const LojistaPainel = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [showStoreEdit, setShowStoreEdit] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -118,6 +120,13 @@ const LojistaPainel = () => {
     setEditingProduct(null);
   };
 
+  const handleStoreSaved = () => {
+    if (user) {
+      loadStore(user.id);
+    }
+    setShowStoreEdit(false);
+  };
+
   const handleEdit = (product: Product) => {
     setEditingProduct(product);
     setShowForm(true);
@@ -183,10 +192,18 @@ const LojistaPainel = () => {
 
       <div className="container mx-auto px-4 py-8">
         {/* Store Info Card */}
-        {store && (
+        {store && !showStoreEdit && (
           <Card className="mb-8">
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Informações da Loja</CardTitle>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowStoreEdit(true)}
+              >
+                <Edit className="mr-2 h-4 w-4" />
+                Editar
+              </Button>
             </CardHeader>
             <CardContent className="space-y-2">
               <p><strong>Nome:</strong> {store.name}</p>
@@ -197,6 +214,22 @@ const LojistaPainel = () => {
                   <strong>Horário:</strong> {store.opening_time.slice(0, 5)} - {store.closing_time.slice(0, 5)}
                 </p>
               )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Store Edit Form */}
+        {store && showStoreEdit && (
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle>Editar Informações da Loja</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <StoreEditForm
+                store={store}
+                onSuccess={handleStoreSaved}
+                onCancel={() => setShowStoreEdit(false)}
+              />
             </CardContent>
           </Card>
         )}

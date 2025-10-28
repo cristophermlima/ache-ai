@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Store } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -17,7 +18,18 @@ const storeSchema = z.object({
   state: z.string().trim().optional(),
   opening_time: z.string().optional(),
   closing_time: z.string().optional(),
+  operating_days: z.array(z.string()).optional(),
 });
+
+const daysOfWeek = [
+  { value: "monday", label: "Segunda" },
+  { value: "tuesday", label: "Terça" },
+  { value: "wednesday", label: "Quarta" },
+  { value: "thursday", label: "Quinta" },
+  { value: "friday", label: "Sexta" },
+  { value: "saturday", label: "Sábado" },
+  { value: "sunday", label: "Domingo" },
+];
 
 const LojistaCadastroLoja = () => {
   const navigate = useNavigate();
@@ -32,8 +44,18 @@ const LojistaCadastroLoja = () => {
     state: "",
     opening_time: "",
     closing_time: "",
+    operating_days: ["monday", "tuesday", "wednesday", "thursday", "friday"] as string[],
   });
   const [gettingLocation, setGettingLocation] = useState(false);
+
+  const handleDayToggle = (day: string) => {
+    setFormData({
+      ...formData,
+      operating_days: formData.operating_days.includes(day)
+        ? formData.operating_days.filter((d) => d !== day)
+        : [...formData.operating_days, day],
+    });
+  };
 
   useEffect(() => {
     checkUser();
@@ -162,6 +184,7 @@ const LojistaCadastroLoja = () => {
         state: validated.state || null,
         opening_time: validated.opening_time || null,
         closing_time: validated.closing_time || null,
+        operating_days: validated.operating_days || null,
       }).select();
 
       console.log("Resultado da inserção:", { data, error });
@@ -296,6 +319,27 @@ const LojistaCadastroLoja = () => {
                   value={formData.closing_time}
                   onChange={(e) => setFormData({ ...formData, closing_time: e.target.value })}
                 />
+              </div>
+
+              <div className="space-y-2 md:col-span-2">
+                <Label>Dias de Funcionamento</Label>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {daysOfWeek.map((day) => (
+                    <div key={day.value} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={day.value}
+                        checked={formData.operating_days.includes(day.value)}
+                        onCheckedChange={() => handleDayToggle(day.value)}
+                      />
+                      <label
+                        htmlFor={day.value}
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                      >
+                        {day.label}
+                      </label>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
 

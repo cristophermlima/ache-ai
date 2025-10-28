@@ -72,6 +72,7 @@ export type Database = {
           longitude: number | null
           name: string
           opening_time: string | null
+          operating_days: Json | null
           state: string | null
           updated_at: string
           user_id: string
@@ -87,6 +88,7 @@ export type Database = {
           longitude?: number | null
           name: string
           opening_time?: string | null
+          operating_days?: Json | null
           state?: string | null
           updated_at?: string
           user_id: string
@@ -102,6 +104,7 @@ export type Database = {
           longitude?: number | null
           name?: string
           opening_time?: string | null
+          operating_days?: Json | null
           state?: string | null
           updated_at?: string
           user_id?: string
