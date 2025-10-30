@@ -3,11 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { LogOut, Plus, Store, Edit } from "lucide-react";
+import { LogOut, Plus, Store, Edit, Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ProductForm } from "@/components/ProductForm";
 import { ProductList } from "@/components/ProductList";
 import { StoreEditForm } from "@/components/StoreEditForm";
+import { BulkUpload } from "@/components/BulkUpload";
 
 interface StoreData {
   id: string;
@@ -37,6 +38,7 @@ const LojistaPainel = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [showStoreEdit, setShowStoreEdit] = useState(false);
+  const [showBulkUpload, setShowBulkUpload] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -237,16 +239,39 @@ const LojistaPainel = () => {
         {/* Products Section */}
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold">Meus Produtos</h2>
-          <Button
-            onClick={() => {
-              setEditingProduct(null);
-              setShowForm(true);
-            }}
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Novo Produto
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowBulkUpload(!showBulkUpload)}
+            >
+              <Upload className="mr-2 h-4 w-4" />
+              Upload em Massa
+            </Button>
+            <Button
+              onClick={() => {
+                setEditingProduct(null);
+                setShowForm(true);
+              }}
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Novo Produto
+            </Button>
+          </div>
         </div>
+
+        {showBulkUpload && (
+          <div className="mb-8">
+            <BulkUpload
+              storeId={store?.id || ""}
+              onSuccess={() => {
+                if (store) {
+                  loadProducts(store.id);
+                }
+                setShowBulkUpload(false);
+              }}
+            />
+          </div>
+        )}
 
         {showForm ? (
           <Card className="mb-8">

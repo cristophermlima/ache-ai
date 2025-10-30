@@ -31,6 +31,7 @@ const Index = () => {
   const [categoryFilter, setCategoryFilter] = useState("");
   const [loading, setLoading] = useState(true);
   const [gettingLocation, setGettingLocation] = useState(false);
+  const [cepInput, setCepInput] = useState("");
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -87,6 +88,49 @@ const Index = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const searchByCep = async () => {
+    if (!cepInput || cepInput.length < 8) {
+      toast({
+        title: "CEP inválido",
+        description: "Digite um CEP válido com 8 dígitos.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setGettingLocation(true);
+    try {
+      const cleanCep = cepInput.replace(/\D/g, '');
+      const response = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`);
+      const data = await response.json();
+
+      if (data.erro) {
+        toast({
+          title: "CEP não encontrado",
+          description: "Verifique o CEP digitado e tente novamente.",
+          variant: "destructive",
+        });
+        setGettingLocation(false);
+        return;
+      }
+
+      setCityFilter(data.localidade);
+      toast({
+        title: "Localização obtida!",
+        description: `Buscando em: ${data.localidade} - ${data.uf}`,
+      });
+      setGettingLocation(false);
+    } catch (error) {
+      console.error("Erro ao buscar CEP:", error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível buscar o CEP.",
+        variant: "destructive",
+      });
+      setGettingLocation(false);
     }
   };
 
@@ -212,8 +256,8 @@ const Index = () => {
                 />
               </div>
               
-              <div className="flex gap-2">
-                <div className="relative flex-1">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                <div className="relative">
                   <Input
                     type="text"
                     placeholder="Filtrar por cidade..."
@@ -222,14 +266,32 @@ const Index = () => {
                     className="h-12 bg-background text-foreground"
                   />
                 </div>
-                <Button
-                  type="button"
-                  onClick={getCurrentLocation}
-                  disabled={gettingLocation}
-                  className="h-12 px-6"
-                >
-                  {gettingLocation ? "Obtendo..." : "📍 Usar Minha Localização"}
-                </Button>
+                <div className="flex gap-2">
+                  <Input
+                    type="text"
+                    placeholder="Buscar por CEP..."
+                    value={cepInput}
+                    onChange={(e) => setCepInput(e.target.value)}
+                    maxLength={9}
+                    className="h-12 bg-background text-foreground"
+                  />
+                  <Button
+                    type="button"
+                    onClick={searchByCep}
+                    disabled={gettingLocation}
+                    className="h-12 px-6 whitespace-nowrap"
+                  >
+                    {gettingLocation ? "..." : "Buscar CEP"}
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={getCurrentLocation}
+                    disabled={gettingLocation}
+                    className="h-12 px-6 whitespace-nowrap"
+                  >
+                    📍
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
