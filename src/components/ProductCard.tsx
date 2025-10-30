@@ -11,6 +11,8 @@ interface ProductCardProps {
     price: number;
     image_url: string | null;
     category: string;
+    colors?: string[] | null;
+    sizes?: string[] | null;
     stores: {
       name: string;
       address: string;
@@ -105,6 +107,19 @@ export const ProductCard = ({ product }: ProductCardProps) => {
         <p className="text-2xl font-bold text-primary">
           R$ {product.price.toFixed(2)}
         </p>
+
+        {(product.colors && product.colors.length > 0) && (
+          <div className="flex flex-wrap gap-1">
+            {product.colors.slice(0, 3).map((color, index) => (
+              <Badge key={index} variant="outline" className="text-xs">
+                {color}
+              </Badge>
+            ))}
+            {product.colors.length > 3 && (
+              <Badge variant="outline" className="text-xs">+{product.colors.length - 3}</Badge>
+            )}
+          </div>
+        )}
         
         <div className="space-y-1 text-sm text-muted-foreground">
           <div className="flex items-start gap-1">

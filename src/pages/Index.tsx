@@ -28,10 +28,22 @@ const Index = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [cityFilter, setCityFilter] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("");
   const [loading, setLoading] = useState(true);
   const [gettingLocation, setGettingLocation] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  const popularCategories = [
+    { name: "Roupas Femininas", icon: "👗" },
+    { name: "Roupas Masculinas", icon: "👔" },
+    { name: "Cosméticos", icon: "💄" },
+    { name: "Bebidas", icon: "🍷" },
+    { name: "Alimentos", icon: "🍕" },
+    { name: "Eletrônicos", icon: "📱" },
+    { name: "Calçados", icon: "👟" },
+    { name: "Acessórios", icon: "👜" },
+  ];
 
   useEffect(() => {
     fetchProducts();
@@ -129,6 +141,7 @@ const Index = () => {
   const filteredProducts = products.filter((product) => {
     const query = searchQuery.toLowerCase().trim();
     const city = cityFilter.toLowerCase().trim();
+    const category = categoryFilter.toLowerCase().trim();
     
     const matchesSearch = !query || (
       product.name?.toLowerCase().includes(query) ||
@@ -140,8 +153,12 @@ const Index = () => {
     const matchesCity = !city || (
       product.stores?.address?.toLowerCase().includes(city)
     );
+
+    const matchesCategory = !category || (
+      product.category?.toLowerCase().includes(category)
+    );
     
-    return matchesSearch && matchesCity;
+    return matchesSearch && matchesCity && matchesCategory;
   });
 
   return (
@@ -219,8 +236,26 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Categories Section */}
+      <section className="container mx-auto px-4 py-8">
+        <h3 className="text-2xl font-bold mb-4">Categorias Populares</h3>
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+          {popularCategories.map((cat) => (
+            <Button
+              key={cat.name}
+              variant={categoryFilter.toLowerCase() === cat.name.toLowerCase() ? "default" : "outline"}
+              className="h-auto py-4 flex flex-col items-center gap-2"
+              onClick={() => setCategoryFilter(categoryFilter === cat.name ? "" : cat.name)}
+            >
+              <span className="text-2xl">{cat.icon}</span>
+              <span className="text-xs text-center">{cat.name}</span>
+            </Button>
+          ))}
+        </div>
+      </section>
+
       {/* Products Grid */}
-      <section className="container mx-auto px-4 py-12">
+      <section className="container mx-auto px-4 pb-12">
         {loading ? (
           <div className="text-center py-12">
             <p className="text-muted-foreground">Carregando produtos...</p>

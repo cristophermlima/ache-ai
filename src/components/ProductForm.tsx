@@ -5,17 +5,22 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
-import { Upload } from "lucide-react";
+import { Upload, X } from "lucide-react";
 
 const productSchema = z.object({
   name: z.string().trim().min(1, { message: "Nome é obrigatório" }).max(100),
   price: z.number().positive({ message: "Preço deve ser maior que zero" }),
-  description: z.string().max(500).optional(),
+  description: z.string().max(1000).optional(),
   category: z.string().min(1, { message: "Categoria é obrigatória" }),
   stock: z.number().min(0).optional(),
   image_url: z.string().url({ message: "URL inválida" }).optional().or(z.literal("")),
+  colors: z.array(z.string()).optional(),
+  sizes: z.array(z.string()).optional(),
+  size_type: z.enum(["number", "letter", "none"]).optional(),
 });
 
 interface ProductFormProps {
@@ -38,7 +43,12 @@ export const ProductForm = ({ storeId, product, onSuccess, onCancel }: ProductFo
     category: product?.category || "",
     stock: product?.stock || 0,
     image_url: product?.image_url || "",
+    size_type: product?.size_type || "none",
   });
+  const [colors, setColors] = useState<string[]>(product?.colors || []);
+  const [sizes, setSizes] = useState<string[]>(product?.sizes || []);
+  const [colorInput, setColorInput] = useState("");
+  const [sizeInput, setSizeInput] = useState("");
 
   const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -102,6 +112,9 @@ export const ProductForm = ({ storeId, product, onSuccess, onCancel }: ProductFo
         price: parseFloat(formData.price),
         stock: parseInt(formData.stock.toString()) || 0,
         image_url: uploadedImageUrl || formData.image_url,
+        colors: colors.length > 0 ? colors : [],
+        sizes: sizes.length > 0 ? sizes : [],
+        size_type: formData.size_type,
       });
 
       if (product) {
@@ -126,6 +139,9 @@ export const ProductForm = ({ storeId, product, onSuccess, onCancel }: ProductFo
           category: validated.category,
           stock: validated.stock || 0,
           image_url: validated.image_url || null,
+          colors: validated.colors || [],
+          sizes: validated.sizes || [],
+          size_type: validated.size_type || "none",
           store_id: storeId,
         };
         
@@ -248,15 +264,123 @@ export const ProductForm = ({ storeId, product, onSuccess, onCancel }: ProductFo
         </div>
 
         <div className="space-y-2 md:col-span-2">
-          <Label htmlFor="description">Descrição</Label>
+          <Label htmlFor="description">Descrição Detalhada</Label>
           <Textarea
             id="description"
-            placeholder="Descreva o produto..."
+            placeholder="Descreva o produto em detalhes: características, materiais, diferenciais..."
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            rows={4}
+            rows={5}
           />
         </div>
+
+        <div className="space-y-2 md:col-span-2">
+          <Label>Cores Disponíveis</Label>
+          <div className="flex gap-2">
+            <Input
+              placeholder="Ex: Vermelho, Azul, Verde"
+              value={colorInput}
+              onChange={(e) => setColorInput(e.target.value)}
+              onKeyPress={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  if (colorInput.trim() && !colors.includes(colorInput.trim())) {
+                    setColors([...colors, colorInput.trim()]);
+                    setColorInput("");
+                  }
+                }
+              }}
+            />
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                if (colorInput.trim() && !colors.includes(colorInput.trim())) {
+                  setColors([...colors, colorInput.trim()]);
+                  setColorInput("");
+                }
+              }}
+            >
+              Adicionar
+            </Button>
+          </div>
+          <div className="flex flex-wrap gap-2 mt-2">
+            {colors.map((color, index) => (
+              <Badge key={index} variant="secondary" className="gap-1">
+                {color}
+                <X
+                  className="h-3 w-3 cursor-pointer"
+                  onClick={() => setColors(colors.filter((_, i) => i !== index))}
+                />
+              </Badge>
+            ))}
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label>Tipo de Tamanho</Label>
+          <Select
+            value={formData.size_type}
+            onValueChange={(value) => {
+              setFormData({ ...formData, size_type: value });
+              if (value === "none") setSizes([]);
+            }}
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">Tamanho Único / Não Aplicável</SelectItem>
+              <SelectItem value="letter">Letras (P, M, G, GG, XG)</SelectItem>
+              <SelectItem value="number">Números</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {formData.size_type !== "none" && (
+          <div className="space-y-2">
+            <Label>Tamanhos Disponíveis</Label>
+            <div className="flex gap-2">
+              <Input
+                placeholder={formData.size_type === "letter" ? "Ex: P, M, G" : "Ex: 38, 40, 42"}
+                value={sizeInput}
+                onChange={(e) => setSizeInput(e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    if (sizeInput.trim() && !sizes.includes(sizeInput.trim())) {
+                      setSizes([...sizes, sizeInput.trim()]);
+                      setSizeInput("");
+                    }
+                  }
+                }}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  if (sizeInput.trim() && !sizes.includes(sizeInput.trim())) {
+                    setSizes([...sizes, sizeInput.trim()]);
+                    setSizeInput("");
+                  }
+                }}
+              >
+                Adicionar
+              </Button>
+            </div>
+            <div className="flex flex-wrap gap-2 mt-2">
+              {sizes.map((size, index) => (
+                <Badge key={index} variant="secondary" className="gap-1">
+                  {size}
+                  <X
+                    className="h-3 w-3 cursor-pointer"
+                    onClick={() => setSizes(sizes.filter((_, i) => i !== index))}
+                  />
+                </Badge>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="flex gap-2">

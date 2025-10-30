@@ -14,6 +14,9 @@ interface Product {
   description: string | null;
   category: string;
   image_url: string | null;
+  colors?: string[] | null;
+  sizes?: string[] | null;
+  size_type?: string | null;
   stores: {
     name: string;
     whatsapp: string;
@@ -58,8 +61,10 @@ const ProductDetail = () => {
 
       if (error) throw error;
       
-      const productWithTypedDays = {
+      const productWithTypedData = {
         ...data,
+        colors: Array.isArray(data.colors) ? data.colors as string[] : null,
+        sizes: Array.isArray(data.sizes) ? data.sizes as string[] : null,
         stores: {
           ...data.stores,
           operating_days: Array.isArray(data.stores.operating_days) 
@@ -68,7 +73,7 @@ const ProductDetail = () => {
         }
       };
       
-      setProduct(productWithTypedDays);
+      setProduct(productWithTypedData);
     } catch (error: any) {
       toast({
         title: "Erro ao carregar produto",
@@ -227,7 +232,35 @@ const ProductDetail = () => {
             {product.description && (
               <div>
                 <h2 className="text-lg font-semibold mb-2">Descrição</h2>
-                <p className="text-muted-foreground">{product.description}</p>
+                <p className="text-muted-foreground whitespace-pre-wrap">{product.description}</p>
+              </div>
+            )}
+
+            {product.colors && product.colors.length > 0 && (
+              <div>
+                <h3 className="text-sm font-semibold mb-2">Cores Disponíveis</h3>
+                <div className="flex flex-wrap gap-2">
+                  {product.colors.map((color, index) => (
+                    <Badge key={index} variant="outline">
+                      {color}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {product.sizes && product.sizes.length > 0 && (
+              <div>
+                <h3 className="text-sm font-semibold mb-2">
+                  Tamanhos Disponíveis {product.size_type === "letter" ? "(Letras)" : product.size_type === "number" ? "(Números)" : ""}
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {product.sizes.map((size, index) => (
+                    <Badge key={index} variant="secondary">
+                      {size}
+                    </Badge>
+                  ))}
+                </div>
               </div>
             )}
 
