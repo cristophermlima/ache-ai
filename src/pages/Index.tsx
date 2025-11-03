@@ -6,6 +6,7 @@ import { Search, ShoppingCart, Store, Shirt, Wine, Pizza, Smartphone, Footprints
 import { Link, useNavigate } from "react-router-dom";
 import { ProductCard } from "@/components/ProductCard";
 import { useToast } from "@/hooks/use-toast";
+import { Slider } from "@/components/ui/slider";
 
 interface Product {
   id: string;
@@ -18,6 +19,9 @@ interface Product {
   stores: {
     name: string;
     address: string;
+    city: string | null;
+    latitude: number | null;
+    longitude: number | null;
     opening_time: string | null;
     closing_time: string | null;
     operating_days: string[] | null;
@@ -32,8 +36,22 @@ const Index = () => {
   const [loading, setLoading] = useState(true);
   const [gettingLocation, setGettingLocation] = useState(false);
   const [cepInput, setCepInput] = useState("");
+  const [distanceRadius, setDistanceRadius] = useState<number>(50);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+    const R = 6371; // Raio da Terra em km
+    const dLat = (lat2 - lat1) * (Math.PI / 180);
+    const dLon = (lon2 - lon1) * (Math.PI / 180);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  };
 
   const popularCategories = [
     { name: "Roupas Femininas", Icon: Shirt },
@@ -60,6 +78,9 @@ const Index = () => {
           stores (
             name,
             address,
+            city,
+            latitude,
+            longitude,
             opening_time,
             closing_time,
             operating_days
@@ -149,6 +170,7 @@ const Index = () => {
       navigator.geolocation.getCurrentPosition(
         async (position) => {
           const { latitude, longitude } = position.coords;
+          setUserLocation({ lat: latitude, lng: longitude });
           
           const response = await fetch(
             `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
@@ -161,7 +183,7 @@ const Index = () => {
             
             toast({
               title: "Localização obtida!",
-              description: `Buscando em: ${city}`,
+              description: `Buscando em: ${city} (raio de ${distanceRadius}km)`,
             });
           }
           setGettingLocation(false);
@@ -195,14 +217,24 @@ const Index = () => {
     );
     
     const matchesCity = !city || (
-      product.stores?.address?.toLowerCase().includes(city)
+      product.stores?.city?.toLowerCase().includes(city)
     );
 
     const matchesCategory = !category || (
       product.category?.toLowerCase().includes(category)
     );
+
+    const matchesDistance = !userLocation || 
+      !product.stores?.latitude || 
+      !product.stores?.longitude ||
+      calculateDistance(
+        userLocation.lat,
+        userLocation.lng,
+        Number(product.stores.latitude),
+        Number(product.stores.longitude)
+      ) <= distanceRadius;
     
-    return matchesSearch && matchesCity && matchesCategory;
+    return matchesSearch && matchesCity && matchesCategory && matchesDistance;
   });
 
   return (
@@ -293,6 +325,22 @@ const Index = () => {
                   </Button>
                 </div>
               </div>
+              
+              {userLocation && (
+                <div className="bg-background/90 backdrop-blur-sm p-4 rounded-lg">
+                  <label className="text-sm font-medium text-foreground mb-2 block">
+                    Raio de busca: {distanceRadius} km
+                  </label>
+                  <Slider
+                    value={[distanceRadius]}
+                    onValueChange={(value) => setDistanceRadius(value[0])}
+                    min={1}
+                    max={100}
+                    step={1}
+                    className="w-full"
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>
