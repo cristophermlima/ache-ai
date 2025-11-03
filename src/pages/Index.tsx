@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, ShoppingCart, Store } from "lucide-react";
+import { Search, ShoppingCart, Store, Shirt, Wine, Pizza, Smartphone, Footprints, ShoppingBag, Sparkles, MapPin } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { ProductCard } from "@/components/ProductCard";
 import { useToast } from "@/hooks/use-toast";
@@ -36,14 +36,14 @@ const Index = () => {
   const { toast } = useToast();
 
   const popularCategories = [
-    { name: "Roupas Femininas", icon: "👗" },
-    { name: "Roupas Masculinas", icon: "👔" },
-    { name: "Cosméticos", icon: "💄" },
-    { name: "Bebidas", icon: "🍷" },
-    { name: "Alimentos", icon: "🍕" },
-    { name: "Eletrônicos", icon: "📱" },
-    { name: "Calçados", icon: "👟" },
-    { name: "Acessórios", icon: "👜" },
+    { name: "Roupas Femininas", Icon: Shirt },
+    { name: "Roupas Masculinas", Icon: Shirt },
+    { name: "Cosméticos", Icon: Sparkles },
+    { name: "Bebidas", Icon: Wine },
+    { name: "Alimentos", Icon: Pizza },
+    { name: "Eletrônicos", Icon: Smartphone },
+    { name: "Calçados", Icon: Footprints },
+    { name: "Acessórios", Icon: ShoppingBag },
   ];
 
   useEffect(() => {
@@ -287,9 +287,9 @@ const Index = () => {
                     type="button"
                     onClick={getCurrentLocation}
                     disabled={gettingLocation}
-                    className="h-12 px-6 whitespace-nowrap"
+                    className="h-12 px-4"
                   >
-                    📍
+                    <MapPin className="h-5 w-5" />
                   </Button>
                 </div>
               </div>
@@ -309,7 +309,7 @@ const Index = () => {
               className="h-auto py-4 flex flex-col items-center gap-2"
               onClick={() => setCategoryFilter(categoryFilter === cat.name ? "" : cat.name)}
             >
-              <span className="text-2xl">{cat.icon}</span>
+              <cat.Icon className="h-6 w-6" />
               <span className="text-xs text-center">{cat.name}</span>
             </Button>
           ))}
