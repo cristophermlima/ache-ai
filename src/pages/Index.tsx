@@ -245,7 +245,7 @@ const Index = () => {
           <div className="flex items-center justify-between">
             <Link to="/" className="flex items-center gap-2">
               <Store className="h-8 w-8" />
-              <h1 className="text-2xl font-bold">Achei Aí</h1>
+              <h1 className="text-2xl font-bold">ACHA AI</h1>
             </Link>
             <div className="flex items-center gap-4">
               <Button

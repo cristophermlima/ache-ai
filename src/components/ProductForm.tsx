@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { Upload, X } from "lucide-react";
+import { ProductVariantsForm } from "@/components/ProductVariantsForm";
 
 const productSchema = z.object({
   name: z.string().trim().min(1, { message: "Nome é obrigatório" }).max(100),
@@ -175,8 +176,11 @@ export const ProductForm = ({ storeId, product, onSuccess, onCancel }: ProductFo
     }
   };
 
+  const currentProductId = product?.id;
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="name">Nome do Produto *</Label>
@@ -392,5 +396,14 @@ export const ProductForm = ({ storeId, product, onSuccess, onCancel }: ProductFo
         </Button>
       </div>
     </form>
+
+    {(colors.length > 0 || sizes.length > 0) && currentProductId && (
+      <ProductVariantsForm
+        productId={currentProductId}
+        colors={colors}
+        sizes={sizes}
+      />
+    )}
+  </div>
   );
 };

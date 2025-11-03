@@ -69,7 +69,7 @@ const Cart = () => {
 
   const sendToWhatsAppForStore = (storeName: string, items: CartItem[]) => {
     const whatsapp = items[0].store.whatsapp.replace(/\D/g, "");
-    let message = `Olá! Vi esses produtos no Achei Aí e quero comprar:\n\n`;
+    let message = `Olá! Vi esses produtos no ACHA AI e quero comprar:\n\n`;
     
     items.forEach((item) => {
       message += `📦 ${item.name}\n`;
@@ -99,7 +99,7 @@ const Cart = () => {
         <div className="container mx-auto px-4 py-4">
           <Link to="/" className="flex items-center gap-2">
             <Store className="h-8 w-8" />
-            <h1 className="text-2xl font-bold">Achei Aí</h1>
+            <h1 className="text-2xl font-bold">ACHA AI</h1>
           </Link>
         </div>
       </header>

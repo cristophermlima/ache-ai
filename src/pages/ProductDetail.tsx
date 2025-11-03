@@ -6,6 +6,15 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Clock, MapPin, ShoppingCart, Store } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { ProductVariantSelector } from "@/components/ProductVariantSelector";
+
+interface ProductVariant {
+  id: string;
+  size: string | null;
+  color: string | null;
+  stock: number;
+  sku: string | null;
+}
 
 interface Product {
   id: string;
@@ -21,6 +30,7 @@ interface Product {
     name: string;
     whatsapp: string;
     address: string;
+    city: string | null;
     opening_time: string | null;
     closing_time: string | null;
     operating_days: string[] | null;
@@ -32,6 +42,7 @@ const ProductDetail = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [product, setProduct] = useState<Product | null>(null);
+  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -51,6 +62,7 @@ const ProductDetail = () => {
             name,
             whatsapp,
             address,
+            city,
             opening_time,
             closing_time,
             operating_days
@@ -89,18 +101,45 @@ const ProductDetail = () => {
   const addToCart = () => {
     if (!product) return;
 
+    // Check if product has variants and if one is selected
+    if ((product.colors && product.colors.length > 0) || (product.sizes && product.sizes.length > 0)) {
+      if (!selectedVariant) {
+        toast({
+          title: "Selecione uma opção",
+          description: "Por favor, selecione cor e/ou tamanho antes de adicionar ao carrinho.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (selectedVariant.stock === 0) {
+        toast({
+          title: "Produto indisponível",
+          description: "Esta variante está sem estoque no momento.",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
     const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-    const existingItem = cart.find((item: any) => item.id === product.id);
+    const cartItemId = selectedVariant ? `${product.id}-${selectedVariant.id}` : product.id;
+    const existingItem = cart.find((item: any) => item.id === cartItemId);
 
     if (existingItem) {
       existingItem.quantity += 1;
     } else {
       cart.push({
-        id: product.id,
+        id: cartItemId,
+        productId: product.id,
         name: product.name,
         price: product.price,
         image_url: product.image_url,
         quantity: 1,
+        variant: selectedVariant ? {
+          size: selectedVariant.size,
+          color: selectedVariant.color,
+        } : null,
         store: product.stores,
       });
     }
@@ -177,7 +216,7 @@ const ProductDetail = () => {
           <div className="flex items-center justify-between">
             <Link to="/" className="flex items-center gap-2">
               <Store className="h-8 w-8" />
-              <h1 className="text-2xl font-bold">Achei Aí</h1>
+              <h1 className="text-2xl font-bold">ACHA AI</h1>
             </Link>
             <Button
               variant="ghost"
@@ -236,32 +275,11 @@ const ProductDetail = () => {
               </div>
             )}
 
-            {product.colors && product.colors.length > 0 && (
-              <div>
-                <h3 className="text-sm font-semibold mb-2">Cores Disponíveis</h3>
-                <div className="flex flex-wrap gap-2">
-                  {product.colors.map((color, index) => (
-                    <Badge key={index} variant="outline">
-                      {color}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {product.sizes && product.sizes.length > 0 && (
-              <div>
-                <h3 className="text-sm font-semibold mb-2">
-                  Tamanhos Disponíveis {product.size_type === "letter" ? "(Letras)" : product.size_type === "number" ? "(Números)" : ""}
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {product.sizes.map((size, index) => (
-                    <Badge key={index} variant="secondary">
-                      {size}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
+            {((product.colors && product.colors.length > 0) || (product.sizes && product.sizes.length > 0)) && (
+              <ProductVariantSelector
+                productId={product.id}
+                onVariantSelect={setSelectedVariant}
+              />
             )}
 
             <Card>
@@ -280,7 +298,12 @@ const ProductDetail = () => {
                   </div>
                   <div className="flex items-center gap-2">
                     <MapPin className="h-4 w-4 text-primary" />
-                    <span>{product.stores.address}</span>
+                    <div className="flex flex-col">
+                      {product.stores.city && (
+                        <span className="font-semibold text-primary">{product.stores.city}</span>
+                      )}
+                      <span>{product.stores.address}</span>
+                    </div>
                   </div>
                   {product.stores.opening_time && product.stores.closing_time && (
                     <div className="flex items-center gap-2">

@@ -16,6 +16,7 @@ interface ProductCardProps {
     stores: {
       name: string;
       address: string;
+      city: string | null;
       opening_time: string | null;
       closing_time: string | null;
       operating_days: string[] | null;
@@ -126,6 +127,9 @@ export const ProductCard = ({ product }: ProductCardProps) => {
             <MapPin className="h-4 w-4 shrink-0 mt-0.5" />
             <div className="flex-1 min-w-0">
               <p className="font-medium text-foreground line-clamp-1">{product.stores.name}</p>
+              {product.stores.city && (
+                <p className="text-xs font-semibold text-primary">{product.stores.city}</p>
+              )}
               <p className="line-clamp-1">{product.stores.address}</p>
             </div>
           </div>
