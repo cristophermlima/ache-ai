@@ -68,7 +68,15 @@ export const ProductVariantSelector = ({ productId, onVariantSelect, required = 
   }
 
   if (variants.length === 0) {
-    return null;
+    return (
+      <Card>
+        <CardContent className="pt-6">
+          <p className="text-sm text-muted-foreground">
+            Este produto ainda não tem opções de cor e tamanho configuradas. Entre em contato com a loja para verificar a disponibilidade.
+          </p>
+        </CardContent>
+      </Card>
+    );
   }
 
   const colors = [...new Set(variants.map(v => v.color).filter(Boolean))] as string[];

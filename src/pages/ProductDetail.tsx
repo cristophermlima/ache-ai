@@ -103,16 +103,15 @@ const ProductDetail = () => {
 
     // Check if variant is required but not selected
     if (selectedVariant === null) {
-      // This will happen only if there are variants to select
       toast({
-        title: "Selecione uma opção",
-        description: "Por favor, selecione cor e/ou tamanho antes de adicionar ao carrinho.",
+        title: "Produto sem variantes configuradas",
+        description: "Este produto ainda não tem opções de cor/tamanho disponíveis. Entre em contato com a loja.",
         variant: "destructive",
       });
       return;
     }
 
-    if (selectedVariant && selectedVariant.stock === 0) {
+    if (selectedVariant.stock === 0) {
       toast({
         title: "Produto indisponível",
         description: "Esta variante está sem estoque no momento.",
