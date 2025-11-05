@@ -16,9 +16,10 @@ interface ProductVariant {
 interface ProductVariantSelectorProps {
   productId: string;
   onVariantSelect: (variant: ProductVariant | null) => void;
+  required?: boolean;
 }
 
-export const ProductVariantSelector = ({ productId, onVariantSelect }: ProductVariantSelectorProps) => {
+export const ProductVariantSelector = ({ productId, onVariantSelect, required = false }: ProductVariantSelectorProps) => {
   const [variants, setVariants] = useState<ProductVariant[]>([]);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
@@ -33,8 +34,14 @@ export const ProductVariantSelector = ({ productId, onVariantSelect }: ProductVa
     const variant = variants.find(
       v => v.color === selectedColor && v.size === selectedSize
     );
-    onVariantSelect(variant || null);
-  }, [selectedColor, selectedSize, variants]);
+    
+    // If there's only one variant and no selection needed, auto-select it
+    if (variants.length === 1 && !required) {
+      onVariantSelect(variants[0]);
+    } else {
+      onVariantSelect(variant || null);
+    }
+  }, [selectedColor, selectedSize, variants, required]);
 
   const fetchVariants = async () => {
     try {

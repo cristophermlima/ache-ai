@@ -101,25 +101,24 @@ const ProductDetail = () => {
   const addToCart = () => {
     if (!product) return;
 
-    // Check if product has variants and if one is selected
-    if ((product.colors && product.colors.length > 0) || (product.sizes && product.sizes.length > 0)) {
-      if (!selectedVariant) {
-        toast({
-          title: "Selecione uma opção",
-          description: "Por favor, selecione cor e/ou tamanho antes de adicionar ao carrinho.",
-          variant: "destructive",
-        });
-        return;
-      }
+    // Check if variant is required but not selected
+    if (selectedVariant === null) {
+      // This will happen only if there are variants to select
+      toast({
+        title: "Selecione uma opção",
+        description: "Por favor, selecione cor e/ou tamanho antes de adicionar ao carrinho.",
+        variant: "destructive",
+      });
+      return;
+    }
 
-      if (selectedVariant.stock === 0) {
-        toast({
-          title: "Produto indisponível",
-          description: "Esta variante está sem estoque no momento.",
-          variant: "destructive",
-        });
-        return;
-      }
+    if (selectedVariant && selectedVariant.stock === 0) {
+      toast({
+        title: "Produto indisponível",
+        description: "Esta variante está sem estoque no momento.",
+        variant: "destructive",
+      });
+      return;
     }
 
     const cart = JSON.parse(localStorage.getItem("cart") || "[]");
@@ -275,12 +274,11 @@ const ProductDetail = () => {
               </div>
             )}
 
-            {((product.colors && product.colors.length > 0) || (product.sizes && product.sizes.length > 0)) && (
-              <ProductVariantSelector
-                productId={product.id}
-                onVariantSelect={setSelectedVariant}
-              />
-            )}
+            <ProductVariantSelector
+              productId={product.id}
+              onVariantSelect={setSelectedVariant}
+              required={true}
+            />
 
             <Card>
               <CardContent className="pt-6 space-y-4">
