@@ -186,6 +186,9 @@ export const ProductVariantsForm = ({ productId, colors, sizes }: ProductVariant
     <Card>
       <CardHeader>
         <CardTitle>Controle de Estoque por Variante</CardTitle>
+        <p className="text-sm text-muted-foreground">
+          Defina o SKU e a quantidade em estoque para cada combinação de cor e tamanho.
+        </p>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="rounded-md border">
@@ -194,25 +197,25 @@ export const ProductVariantsForm = ({ productId, colors, sizes }: ProductVariant
               <TableRow>
                 {colors.length > 0 && <TableHead>Cor</TableHead>}
                 {sizes.length > 0 && <TableHead>Tamanho</TableHead>}
-                <TableHead>SKU</TableHead>
-                <TableHead className="w-[120px]">Estoque</TableHead>
+                <TableHead>SKU (editável)</TableHead>
+                <TableHead className="w-[140px]">Estoque (editável)</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {variants.map((variant, index) => (
                 <TableRow key={index}>
                   {colors.length > 0 && (
-                    <TableCell className="font-medium">{variant.color}</TableCell>
+                    <TableCell className="font-medium text-primary">{variant.color}</TableCell>
                   )}
                   {sizes.length > 0 && (
-                    <TableCell className="font-medium">{variant.size}</TableCell>
+                    <TableCell className="font-medium text-primary">{variant.size}</TableCell>
                   )}
                   <TableCell>
                     <Input
                       value={variant.sku}
                       onChange={(e) => updateVariant(index, "sku", e.target.value)}
-                      placeholder="SKU"
-                      className="max-w-[150px]"
+                      placeholder="Digite o SKU"
+                      className="max-w-[150px] bg-background"
                     />
                   </TableCell>
                   <TableCell>
@@ -221,7 +224,8 @@ export const ProductVariantsForm = ({ productId, colors, sizes }: ProductVariant
                       min="0"
                       value={variant.stock}
                       onChange={(e) => updateVariant(index, "stock", parseInt(e.target.value) || 0)}
-                      className="max-w-[100px]"
+                      placeholder="0"
+                      className="max-w-[100px] bg-background"
                     />
                   </TableCell>
                 </TableRow>
