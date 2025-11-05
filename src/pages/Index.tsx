@@ -273,6 +273,9 @@ const Index = () => {
             <h2 className="text-4xl md:text-5xl font-bold">
               Encontre o que você procura nas lojas locais
             </h2>
+            <p className="text-lg text-primary-foreground/90">
+              💡 Ative sua localização ou digite seu CEP para encontrar lojas próximas
+            </p>
           
             
             {/* Search Bar */}
@@ -319,9 +322,11 @@ const Index = () => {
                     type="button"
                     onClick={getCurrentLocation}
                     disabled={gettingLocation}
-                    className="h-12 px-4"
+                    className="h-12 px-6 gap-2"
+                    title="Usar minha localização atual"
                   >
                     <MapPin className="h-5 w-5" />
+                    <span className="hidden sm:inline">Localização</span>
                   </Button>
                 </div>
               </div>

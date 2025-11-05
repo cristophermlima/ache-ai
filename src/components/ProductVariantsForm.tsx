@@ -76,6 +76,13 @@ export const ProductVariantsForm = ({ productId, colors, sizes }: ProductVariant
       return;
     }
 
+    const generateSKU = (color: string, size: string) => {
+      const colorPart = color ? color.substring(0, 3).toUpperCase() : '';
+      const sizePart = size ? size.toUpperCase() : '';
+      const timestamp = Date.now().toString().slice(-4);
+      return `${colorPart}${sizePart ? '-' + sizePart : ''}-${timestamp}`;
+    };
+
     if (colors.length > 0 && sizes.length > 0) {
       colors.forEach(color => {
         sizes.forEach(size => {
@@ -83,7 +90,7 @@ export const ProductVariantsForm = ({ productId, colors, sizes }: ProductVariant
             size,
             color,
             stock: 0,
-            sku: `${color.toUpperCase()}-${size}`,
+            sku: generateSKU(color, size),
           });
         });
       });
@@ -93,7 +100,7 @@ export const ProductVariantsForm = ({ productId, colors, sizes }: ProductVariant
           size: "",
           color,
           stock: 0,
-          sku: color.toUpperCase(),
+          sku: generateSKU(color, ""),
         });
       });
     } else if (sizes.length > 0) {
@@ -102,7 +109,7 @@ export const ProductVariantsForm = ({ productId, colors, sizes }: ProductVariant
           size,
           color: "",
           stock: 0,
-          sku: size,
+          sku: generateSKU("", size),
         });
       });
     }
