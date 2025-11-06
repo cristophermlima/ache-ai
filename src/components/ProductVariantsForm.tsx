@@ -59,7 +59,51 @@ export const ProductVariantsForm = ({ productId, colors, sizes }: ProductVariant
         sku: v.sku || "",
       }));
 
-      setVariants(formattedVariants);
+      if (formattedVariants.length > 0) {
+        setVariants(formattedVariants);
+      } else {
+        // Nenhuma variante cadastrada ainda: gerar automaticamente com base em cores/tamanhos
+        const newVariants: ProductVariant[] = [];
+        const generateSKU = (color: string, size: string) => {
+          const colorPart = color ? color.substring(0, 3).toUpperCase() : '';
+          const sizePart = size ? size.toUpperCase() : '';
+          const timestamp = Date.now().toString().slice(-4);
+          return `${colorPart}${sizePart ? '-' + sizePart : ''}-${timestamp}`;
+        };
+
+        if (colors.length > 0 && sizes.length > 0) {
+          colors.forEach(color => {
+            sizes.forEach(size => {
+              newVariants.push({
+                size,
+                color,
+                stock: 0,
+                sku: generateSKU(color, size),
+              });
+            });
+          });
+        } else if (colors.length > 0) {
+          colors.forEach(color => {
+            newVariants.push({
+              size: "",
+              color,
+              stock: 0,
+              sku: generateSKU(color, ""),
+            });
+          });
+        } else if (sizes.length > 0) {
+          sizes.forEach(size => {
+            newVariants.push({
+              size,
+              color: "",
+              stock: 0,
+              sku: generateSKU("", size),
+            });
+          });
+        }
+
+        setVariants(newVariants);
+      }
     } catch (error: any) {
       toast({
         title: "Erro ao carregar variantes",
