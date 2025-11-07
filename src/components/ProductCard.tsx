@@ -1,7 +1,7 @@
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Clock, MapPin } from "lucide-react";
+import { Clock, MapPin, Store } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface ProductCardProps {
@@ -11,6 +11,7 @@ interface ProductCardProps {
     price: number;
     image_url: string | null;
     category: string;
+    store_id: string;
     colors?: string[] | null;
     sizes?: string[] | null;
     stores: {
@@ -149,12 +150,23 @@ export const ProductCard = ({ product }: ProductCardProps) => {
         </div>
       </CardContent>
       
-      <CardFooter className="p-4 pt-0">
-        <Button className="w-full" onClick={(e) => {
+      <CardFooter className="p-4 pt-0 flex gap-2">
+        <Button className="flex-1" onClick={(e) => {
           e.stopPropagation();
           navigate(`/produto/${product.id}`);
         }}>
           Ver Detalhes
+        </Button>
+        <Button 
+          variant="outline" 
+          size="icon"
+          onClick={(e) => {
+            e.stopPropagation();
+            navigate(`/loja/${product.store_id}`);
+          }}
+          title="Ver todos os produtos desta loja"
+        >
+          <Store className="h-4 w-4" />
         </Button>
       </CardFooter>
     </Card>

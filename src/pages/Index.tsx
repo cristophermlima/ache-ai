@@ -7,6 +7,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { ProductCard } from "@/components/ProductCard";
 import { useToast } from "@/hooks/use-toast";
 import { Slider } from "@/components/ui/slider";
+import { AdvertisementCarousel } from "@/components/AdvertisementCarousel";
+import { ProductCarousel } from "@/components/ProductCarousel";
 
 interface Product {
   id: string;
@@ -350,6 +352,20 @@ const Index = () => {
           </div>
         </div>
       </section>
+
+      {/* Advertisement Carousel */}
+      <AdvertisementCarousel />
+
+      {/* Product Carousels */}
+      <ProductCarousel 
+        title="Lançamentos" 
+        products={products.slice(0, 8)} 
+      />
+      
+      <ProductCarousel 
+        title="Mais Vendidos" 
+        products={products.slice(8, 16)} 
+      />
 
       {/* Categories Section */}
       <section className="container mx-auto px-4 py-8">
