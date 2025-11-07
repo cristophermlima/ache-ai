@@ -9,6 +9,7 @@ import { ProductForm } from "@/components/ProductForm";
 import { ProductList } from "@/components/ProductList";
 import { StoreEditForm } from "@/components/StoreEditForm";
 import { BulkUpload } from "@/components/BulkUpload";
+import { StoreNotifications } from "@/components/StoreNotifications";
 
 interface StoreData {
   id: string;
@@ -180,14 +181,17 @@ const LojistaPainel = () => {
                 {store && <p className="text-sm opacity-90">{store.name}</p>}
               </div>
             </div>
-            <Button
-              variant="ghost"
-              onClick={handleLogout}
-              className="hover:bg-primary-foreground/10"
-            >
-              <LogOut className="mr-2 h-4 w-4" />
-              Sair
-            </Button>
+            <div className="flex items-center gap-2">
+              {store && <StoreNotifications storeId={store.id} />}
+              <Button
+                variant="ghost"
+                onClick={handleLogout}
+                className="hover:bg-primary-foreground/10"
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                Sair
+              </Button>
+            </div>
           </div>
         </div>
       </header>

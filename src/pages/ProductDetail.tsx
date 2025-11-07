@@ -23,6 +23,7 @@ interface Product {
   description: string | null;
   category: string;
   image_url: string | null;
+  store_id: string;
   colors?: string[] | null;
   sizes?: string[] | null;
   size_type?: string | null;
@@ -98,7 +99,7 @@ const ProductDetail = () => {
     }
   };
 
-  const addToCart = () => {
+  const addToCart = async () => {
     if (!product) return;
 
     // Check if variant is required but not selected
@@ -143,6 +144,23 @@ const ProductDetail = () => {
     }
 
     localStorage.setItem("cart", JSON.stringify(cart));
+    
+    // Criar notificação para o lojista
+    try {
+      const variantText = selectedVariant 
+        ? ` (${[selectedVariant.color, selectedVariant.size].filter(Boolean).join(', ')})` 
+        : '';
+      
+      await supabase.from("store_notifications").insert({
+        store_id: product.store_id,
+        product_id: product.id,
+        notification_type: "cart_add",
+        message: `Um cliente adicionou "${product.name}${variantText}" ao carrinho!`
+      });
+    } catch (error) {
+      console.error("Erro ao criar notificação:", error);
+    }
+
     toast({
       title: "Adicionado ao carrinho!",
       description: `${product.name} foi adicionado ao seu carrinho.`,
