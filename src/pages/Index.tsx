@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Slider } from "@/components/ui/slider";
 import { AdvertisementCarousel } from "@/components/AdvertisementCarousel";
 import { ProductCarousel } from "@/components/ProductCarousel";
+import { Footer } from "@/components/Footer";
 
 interface Product {
   id: string;
@@ -407,6 +408,8 @@ const Index = () => {
           </div>
         )}
       </section>
+
+      <Footer />
     </div>
   );
 };

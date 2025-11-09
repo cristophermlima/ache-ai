@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Footer } from "@/components/Footer";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft, Minus, Plus, Store, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -247,6 +248,8 @@ const Cart = () => {
           </div>
         )}
       </div>
+
+      <Footer />
     </div>
   );
 };

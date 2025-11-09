@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Clock, MapPin, ShoppingCart, Store } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ProductVariantSelector } from "@/components/ProductVariantSelector";
+import { Footer } from "@/components/Footer";
 
 interface ProductVariant {
   id: string;
@@ -348,6 +349,8 @@ const ProductDetail = () => {
           </div>
         </div>
       </div>
+
+      <Footer />
     </div>
   );
 };

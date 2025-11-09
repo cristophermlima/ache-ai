@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Store, MapPin, Clock } from "lucide-react";
 import { ProductCard } from "@/components/ProductCard";
+import { Footer } from "@/components/Footer";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 
@@ -228,6 +229,8 @@ const StoreProducts = () => {
           </div>
         )}
       </section>
+
+      <Footer />
     </div>
   );
 };

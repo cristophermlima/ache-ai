@@ -1,33 +1,51 @@
+import { useEffect, useState } from "react";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Autoplay from "embla-carousel-autoplay";
+import { supabase } from "@/integrations/supabase/client";
 
-const advertisements = [
-  {
-    id: 1,
-    title: "Encontre produtos locais",
-    subtitle: "Compre de lojas próximas a você",
-    gradient: "from-primary via-primary/90 to-primary/80",
-    cta: "Explorar Agora"
-  },
-  {
-    id: 2,
-    title: "Parcele em até 12x",
-    subtitle: "Sem juros no cartão",
-    gradient: "from-accent via-accent/90 to-accent/80",
-    cta: "Ver Ofertas"
-  },
-  {
-    id: 3,
-    title: "Pagamento Rápido e Seguro",
-    subtitle: "Realize pagamentos de forma segura",
-    gradient: "from-secondary via-secondary/90 to-secondary/80",
-    cta: "Saiba Mais"
-  }
-];
+interface Advertisement {
+  id: string;
+  title: string;
+  subtitle: string;
+  cta_text: string;
+  gradient: string;
+  image_url: string | null;
+}
 
 export const AdvertisementCarousel = () => {
+  const [advertisements, setAdvertisements] = useState<Advertisement[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchAdvertisements();
+  }, []);
+
+  const fetchAdvertisements = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("advertisements")
+        .select("*")
+        .eq("is_active", true)
+        .order("display_order");
+
+      if (error) {
+        console.error("Error fetching advertisements:", error);
+        return;
+      }
+
+      setAdvertisements(data || []);
+    } catch (error) {
+      console.error("Error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading || advertisements.length === 0) {
+    return null;
+  }
   return (
     <section className="container mx-auto px-4 py-8">
       <Carousel
@@ -59,7 +77,7 @@ export const AdvertisementCarousel = () => {
                       variant="secondary"
                       className="mt-4"
                     >
-                      {ad.cta}
+                      {ad.cta_text}
                     </Button>
                   </div>
                 </div>
