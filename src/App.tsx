@@ -14,6 +14,7 @@ import LojistaPainel from "./pages/LojistaPainel";
 import AdminPainel from "./pages/AdminPainel";
 import QuemSomos from "./pages/QuemSomos";
 import PoliticaPrivacidade from "./pages/PoliticaPrivacidade";
+import LojistaResetSenha from "./pages/LojistaResetSenha";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,6 +34,7 @@ const App = () => (
           <Route path="/lojista/cadastro" element={<LojistaCadastro />} />
           <Route path="/lojista/cadastro-loja" element={<LojistaCadastroLoja />} />
           <Route path="/lojista/painel" element={<LojistaPainel />} />
+          <Route path="/lojista/recuperar-senha" element={<LojistaResetSenha />} />
           <Route path="/admin" element={<AdminPainel />} />
           <Route path="/quem-somos" element={<QuemSomos />} />
           <Route path="/politica-privacidade" element={<PoliticaPrivacidade />} />

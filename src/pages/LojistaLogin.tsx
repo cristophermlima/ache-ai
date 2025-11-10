@@ -92,7 +92,7 @@ const LojistaLogin = () => {
       setResetLoading(true);
 
       const { error } = await supabase.auth.resetPasswordForEmail(validated, {
-        redirectTo: `${window.location.origin}/lojista/login`,
+        redirectTo: `${window.location.origin}/lojista/recuperar-senha`,
       });
 
       if (error) throw error;
