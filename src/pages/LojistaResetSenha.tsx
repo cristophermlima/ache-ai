@@ -113,8 +113,8 @@ const LojistaResetSenha = () => {
               <div className="text-center text-muted-foreground">Verificando link...</div>
             ) : (
               <div className="text-center space-y-3">
-                <Button asChild>
-                  <Link to="/lojista/login">Voltar</Link>
+                <Button asChild variant="default" className="w-full">
+                  <Link to="/lojista/login">Voltar para o login</Link>
                 </Button>
               </div>
             )}
