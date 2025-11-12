@@ -36,6 +36,7 @@ const App = () => (
           <Route path="/lojista/painel" element={<LojistaPainel />} />
           <Route path="/lojista/recuperar-senha" element={<LojistaResetSenha />} />
           <Route path="/admin" element={<AdminPainel />} />
+          <Route path="/admin/painel" element={<AdminPainel />} />
           <Route path="/quem-somos" element={<QuemSomos />} />
           <Route path="/politica-privacidade" element={<PoliticaPrivacidade />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

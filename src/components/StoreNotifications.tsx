@@ -150,11 +150,11 @@ export const StoreNotifications = ({ storeId }: StoreNotificationsProps) => {
         <Button
           variant="ghost"
           size="icon"
-          className="relative hover:bg-accent"
+          className="relative hover:bg-primary-foreground/10"
         >
-          <Bell className="h-5 w-5 text-foreground" />
+          <Bell className="h-5 w-5 text-accent" />
           {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center font-semibold">
+            <span className="absolute -top-1 -right-1 bg-accent text-primary text-xs rounded-full h-5 w-5 flex items-center justify-center font-semibold">
               {unreadCount > 9 ? "9+" : unreadCount}
             </span>
           )}

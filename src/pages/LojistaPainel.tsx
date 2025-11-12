@@ -41,6 +41,7 @@ const LojistaPainel = () => {
   const [showStoreEdit, setShowStoreEdit] = useState(false);
   const [showBulkUpload, setShowBulkUpload] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     checkAuth();
@@ -55,6 +56,17 @@ const LojistaPainel = () => {
     }
 
     setUser(user);
+    
+    // Check if user is admin
+    const { data: roleData } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .eq("role", "admin")
+      .maybeSingle();
+    
+    setIsAdmin(!!roleData);
+    
     await loadStore(user.id);
   };
 
@@ -183,6 +195,16 @@ const LojistaPainel = () => {
             </div>
             <div className="flex items-center gap-2">
               {store && <StoreNotifications storeId={store.id} />}
+              {isAdmin && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate("/admin")}
+                  className="border-accent text-accent hover:bg-accent hover:text-primary"
+                >
+                  Painel Admin
+                </Button>
+              )}
               <Button
                 variant="ghost"
                 onClick={handleLogout}
