@@ -64,18 +64,18 @@ export const AdvertisementCarousel = () => {
           {advertisements.map((ad) => (
             <CarouselItem key={ad.id}>
               <Card className="border-0 overflow-hidden">
-                <div className={`bg-gradient-to-r ${ad.gradient} text-primary-foreground p-8 md:p-16 rounded-lg min-h-[300px] flex flex-col justify-center items-center text-center`}>
+                <div className={`bg-gradient-to-r ${ad.gradient} text-white p-8 md:p-16 rounded-lg min-h-[300px] flex flex-col justify-center items-center text-center`}>
                   <div className="max-w-2xl space-y-4">
-                    <h2 className="text-3xl md:text-5xl font-bold">
+                    <h2 className="text-3xl md:text-5xl font-bold drop-shadow-lg">
                       {ad.title}
                     </h2>
-                    <p className="text-lg md:text-xl opacity-90">
+                    <p className="text-lg md:text-xl opacity-90 drop-shadow">
                       {ad.subtitle}
                     </p>
                     <Button 
                       size="lg" 
                       variant="secondary"
-                      className="mt-4"
+                      className="mt-4 bg-white text-gray-900 hover:bg-gray-100"
                     >
                       {ad.cta_text}
                     </Button>
